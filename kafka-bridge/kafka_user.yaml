@@ -1,0 +1,31 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: my-bridge
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+    # Topics and groups used by the HTTP clients through the HTTP Bridge
+    # Change to match the topics used by your HTTP clients
+    - resource:
+        type: group
+        name: my-group
+      operations:
+        - Read
+        - Write
+        - Create
+        - Describe
+        - Delete
+    - resource:
+        type: topic
+        name: my-bridge
+        operations:
+          - Create
+          - Describe
+          - Read
+          - Write

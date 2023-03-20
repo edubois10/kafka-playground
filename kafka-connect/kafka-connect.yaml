@@ -1,0 +1,105 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  annotations:
+    strimzi.io/use-connector-resources: 'true'
+  name: my-connect-cluster
+spec:
+  bootstrapServers: 'my-cluster-kafka-bootstrap:9092'
+  build:
+    output:
+      image: 'quay.io/edubois10/my-kafka-connect:latest'
+      pushSecret: edubois10-pull-secret
+      type: docker
+    plugins:
+      - name: filewatch-source-connector
+        artifacts:
+          - type: tgz
+            url: >-
+              https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-file-watch-kafka-connector/0.10.1/camel-file-watch-kafka-connector-0.10.1-package.tar.gz
+      - name: debezium-postgres-connector
+        artifacts:
+          - type: zip
+            url: https://repo1.maven.org/maven2/io/debezium/debezium-connector-postgres/2.1.1.Final/debezium-connector-postgres-2.1.1.Final-plugin.zip
+      - name: camel-postgresql-sink-kafka-connector
+        artifacts:
+          - type: jar
+            url: >-
+              https://jdbc.postgresql.org/download/postgresql-42.5.1.jar
+          - type: tgz
+            url: >-
+              https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-postgresql-sink-kafka-connector/3.19.0/camel-postgresql-sink-kafka-connector-3.19.0-package.tar.gz
+      - name: camel-postgresql-source-kafka-connector
+        artifacts:
+          - type: tgz
+            url: >-
+              https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-postgresql-source-kafka-connector/3.19.0/camel-postgresql-source-kafka-connector-3.19.0-package.tar.gz
+  config:
+    group.id: my-connect-cluster
+    offset.storage.topic: my-connect-cluster-offsets
+    config.storage.topic: my-connect-cluster-configs
+    status.storage.topic: my-connect-cluster-status
+    key.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    key.converter.schemas.enable: false # Change to false because of error in connect https://github.com/confluentinc/kafka-connect-jdbc/issues/574
+    value.converter.schemas.enable: false # Change to false because of error in connect
+    config.storage.replication.factor: 3
+    offset.storage.replication.factor: 3
+    status.storage.replication.factor: 3
+  replicas: 1
+  version: 3.3.1
+
+
+
+## Working example
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  annotations:
+    strimzi.io/use-connector-resources: 'true'
+  name: my-connect-cluster
+  namespace: kafka-playground
+spec:
+  bootstrapServers: 'my-cluster-kafka-bootstrap:9092'
+  build:
+    output:
+      image: 'quay.io/edubois10/my-kafka-connect:latest'
+      pushSecret: edubois10-pull-secret
+      type: docker
+    plugins:
+      - artifacts:
+          - type: tgz
+            url: >-
+              https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-file-watch-kafka-connector/0.10.1/camel-file-watch-kafka-connector-0.10.1-package.tar.gz
+        name: filewatch-source-connector
+      - artifacts:
+          - type: zip
+            url: >-
+              https://repo1.maven.org/maven2/io/debezium/debezium-connector-postgres/2.1.1.Final/debezium-connector-postgres-2.1.1.Final-plugin.zip
+        name: debezium-postgres-connector
+      - artifacts:
+          - type: jar
+            url: 'https://jdbc.postgresql.org/download/postgresql-42.5.1.jar'
+          - type: tgz
+            url: >-
+              https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-postgresql-sink-kafka-connector/3.19.0/camel-postgresql-sink-kafka-connector-3.19.0-package.tar.gz
+        name: camel-postgresql-sink-kafka-connector
+      - artifacts:
+          - type: tgz
+            url: >-
+              https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-postgresql-source-kafka-connector/3.19.0/camel-postgresql-source-kafka-connector-3.19.0-package.tar.gz
+        name: camel-postgresql-source-kafka-connector
+  config:
+    status.storage.topic: my-connect-cluster-status
+    status.storage.replication.factor: 3
+    offset.storage.topic: my-connect-cluster-offsets
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    group.id: my-connect-cluster
+    value.converter.schemas.enable: false
+    config.storage.replication.factor: 3
+    config.storage.topic: my-connect-cluster-configs
+    key.converter: org.apache.kafka.connect.json.JsonConverter
+    key.converter.schemas.enable: false
+    offset.storage.replication.factor: 3
+  replicas: 1
+  version: 3.3.1

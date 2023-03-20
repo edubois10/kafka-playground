@@ -1,0 +1,54 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  labels:
+    strimzi.io/cluster: my-connect-cluster
+  name: postgres-sink-connector
+  namespace: kafka-playground
+spec:
+  class: >-
+    org.apache.camel.kafkaconnector.postgresqlsink.CamelPostgresqlsinkSinkConnector
+  config:
+    camel.kamelet.postgresql-sink.databaseName: bvprojectdb
+    camel.kamelet.postgresql-sink.password: redhat10
+    camel.kamelet.postgresql-sink.query: >-
+      INSERT INTO player (age,familyname,handed,name) VALUES 
+      (age,familyname,handed,name)
+    camel.kamelet.postgresql-sink.serverName: 172.30.182.149
+    camel.kamelet.postgresql-sink.serverPort: 5432
+    camel.kamelet.postgresql-sink.username: admin
+    topics: player-topic
+  tasksMax: 1
+
+
+
+
+#Working example
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  labels:
+    strimzi.io/cluster: my-connect-cluster
+  name: postgres-sink-connector
+  namespace: kafka-playground
+spec:
+  class: >-
+    org.apache.camel.kafkaconnector.postgresqlsink.CamelPostgresqlsinkSinkConnector
+  config:
+    camel.kamelet.postgresql-sink.databaseName: bvprojectdb
+    value.converter: org.apache.kafka.connect.storage.StringConverter
+    topics: player-topic
+    camel.kamelet.postgresql-sink.serverName: 172.30.182.149
+    camel.kamelet.postgresql-sink.query: >-
+      INSERT INTO player (age,familyname,handed,name) VALUES 
+      (age,familyname,handed,name)
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    camel.kamelet.postgresql-sink.username: admin
+    camel.kamelet.postgresql-sink.password: redhat10
+    camel.kamelet.postgresql-sink.serverPort: 5432
+  tasksMax: 1
+
+
+
+
+                                                

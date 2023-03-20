@@ -1,0 +1,136 @@
+apiVersion: kafka.strimzi.io/vibeta2
+kind: Kafka metadata:
+  name: {{ Release.Name }} 
+  labels:
+    app: strimzi
+spec:
+  {{- if .Value.ownCerts.enabled}}
+  clusterCa:
+    generateSecretOwnerReference: false 
+  clientsCa:
+    generateSecretOwnerReference: false
+  {{- end }}
+  kafka:
+    version: 3.3.1
+    replicas: {{ . Values. kafka.replicas }}
+    listeners:
+      - name: tls 
+        port: 9093
+        type: internal
+        tls: true
+        authentication:
+          type: scram-sha-512
+        networkPolicyPeers:
+          {{- if .Value.networkPolicy.enabled}}
+          {{- toYaml .Values. kafka.listeners.networkPolicyPeers | nindent 10 }}
+          {{- if .Value.networkPolicy.enabled}}
+      - name: external
+        port: 9094 
+        tls: true 
+        type: route
+        authentication:
+          type: scram-sha-512
+          {{- if .Value.ownCerts.enabled}}
+          configuration:
+            brokerCertChainAndKey: 
+              certificate: tls.crt 
+              key: tls.key
+              secretName: {{ -Release.Name }}-kafka-tls
+          {{- end }}
+    readinessProbe:
+      initialDelaySeconds: 15
+      timeoutSeconds: 5
+    livenessProbe:
+      initialDelaySeconds: 15
+      timeoutSeconds: 5 
+    authorization:
+      type: simple 
+    config:
+      offsets.topic.replication. factor: 3
+      transaction.state.log.replication. factor: 3
+      transaction.state.log.min.isr: 2
+      default.replication. factor: 3
+      min.insync.replicas: 2 
+      inter.broker.protocol.version: "3.3"
+    storage:
+      type: jbod
+      volumes:
+      - id: 0
+        type: persistent-claim 
+        size: 10G1 
+        deleteClaim: false
+      - id: 1 
+        type: persistent-claim 
+        size: 10Gi 
+        deleteClaim: false
+      - id: 2
+        type: persistent-claim
+        size: 10Gi 
+        deleteClaim: false
+    metricsConfig:
+      type: jmxPrometheusExporter 
+      valueFrom:
+        configMapKeyRef:
+          name: {{ . Release. Name }}-kafka-metrics 
+          key: kafka-metrics-config. yml
+    resources:
+      {{- toYaml .Values. kafka.resources | nindent 6 }}
+    template:
+      pod:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm: 
+                labelSelector:
+                  matchExpressions:
+                    - key: app. kubernetes.io/name
+                      operator: In 
+                      values:
+                        - kafka
+                topologyKey: kubernetes.io/hostname I
+                # 90 because rack awareness is 100
+                weight: 90
+    rack:
+      topologykey: topology. kubernetes.io/zone
+  zookeeper:
+    replicas: ( Values .zookeeper.replicas })
+    readinessProbe:
+      initialDelaySeconds: 15
+      timeoutSeconds: 5 
+    livenessProbe:
+      initialDelaySeconds: 15
+      timeoutSeconds: 5
+    # Jbod is not supported for zookeeper
+    storage:
+      type: persistent-claim 
+      size: 20Gi 
+      deleteClaim: false
+    metricsConfig:
+      type: jmxPrometheusExporter 
+      valueFrom:
+        configMapKeyRef:
+          name: {{ .Release. Name }}-kafka-metrics 
+          key: zookeeper-metrics-config.yml
+    resources:
+      {{- toYaml •Values. zookeeper. resources | nindent 6 }}
+    template:
+      pod:
+        affanity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm: 
+                labelSelector:
+                  matchExpressions:
+                    - key: app. kubernetes.io/name
+                      operator: In
+                      values:
+                        - zookeeper
+                topologyKey: kubernetes.io/hostname
+              # 90 because rack awareness is 100
+              weight; 90
+  entityOperator:
+    topicOperator: (} 
+    userOperator: (}
+  kafkaExporter: 
+    topicRegex: ".*"
+    groupRegex: ".*"

@@ -1,0 +1,229 @@
+curl -X POST \
+http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/my-topic \
+-H 'Content-type: application/vnd.kafka.json.v2+json' \
+-d '{
+    "records": [
+      {
+        "key": "my-key",
+        "value": "ZWR3YXJkdGhldGhyZWVsZWdnZWRjYXQ="
+      },
+    ]
+  }'
+
+curl -X POST \
+http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/my-topic \
+-H 'Content-type: application/vnd.kafka.json.v2+json' \
+-d '{
+    "records": [
+      { "key": "my-test",
+        "value": {
+          "age": 26,
+          "familyname": "Rolando",
+          "handed": "Right",
+          "name": "Vincente"
+        }
+      }
+    ]
+  }'
+
+  curl -X POST \
+  http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/new-bank-account \
+  -H 'content-type: application/vnd.kafka.json.v2+json' \
+  -d '{
+    "records": [
+        {
+            "key": "my-key",
+            "value": "sales-lead-0001"
+            "partition": 2
+            "headers": [
+              {
+                "key": "key1",
+                "value": "QXBhY2hlIEthZmthIGlzIHRoZSBib21iIQ==" (1)
+              }
+            ]
+        },
+    ]
+}'
+
+curl -v -X OPTIONS -H 'Origin: http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/new-bank-account' \
+-H 'Access-Control-Request-Method: POST' \
+-H 'content-type: application/vnd.kafka.v2+json'
+
+
+
+curl -X POST \
+  http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/my-topic \
+  -H 'content-type: application/vnd.kafka.json.v2+json' \
+  -d '{
+    "records": [
+        {
+            "key": "my-key",
+            "value": "sales-lead-0001"
+            "partition": 2
+            "headers": [
+              {
+                "key": "key1",
+                "value": "QXBhY2hlIEthZmthIGlzIHRoZSBib21iIQ==" (1)
+              }
+            ]
+        },
+    ]
+}'
+
+# Get topic information
+curl -X GET \
+ http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/my-topic
+
+ ## List partitions
+ curl -X GET \
+ http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/my-topic/partitions
+
+ // Info about a particular partition
+ curl -X GET \
+ http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/my-topic/partitions/0
+
+ // List offsets
+ curl -X GET \
+ http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/my-topic/partitions/0/offsets
+
+// Send records to my-topic
+ curl -X POST \
+ http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/my-topic \
+        -H 'Content-type: application/vnd.kafka.json.v2+json' \
+        -d '{
+    "records": [
+        {
+            "key": "key-1",
+            "value": "value-1"
+        },
+        {
+            "key": "key-2",
+            "value": "value-2"
+        }
+    ]}'
+
+
+// Create a kafka consumer "my-consumer"
+curl -X POST http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/consumers/my-consumer \
+  -H 'content-type: application/vnd.kafka.v2+json' \
+  -d '{
+    "name": "my-consumer",
+    "auto.offset.reset": "earliest",
+    "format": "json",
+    "enable.auto.commit": false,
+    "fetch.min.bytes": 512,
+    "consumer.request.timeout.ms": 30000
+  }'
+
+  // Output -> {"instance_id":"my-consumer","base_uri":"http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org:80/consumers/my-consumer/instances/my-consumer"}%
+
+  //subscribe created consumer to kafka-topic
+  curl -X POST http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/consumers/my-consumer/instances/my-consumer/subscription \
+  -H 'content-type: application/vnd.kafka.v2+json' \
+  -d '{
+    "topics": [
+        "my-topic"
+    ]
+}'
+
+// Retrieve messages from topic
+curl -X GET http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/consumers/my-consumer/instances/my-consumer \
+-H 'accept: application/vnd.kafka.json.v2+json'
+
+
+
+
+curl -X POST http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/consumers/bridge-quickstart-consumer-group \
+  -H 'content-type: application/vnd.kafka.v2+json' \
+  -d '{
+    "name": "bridge-quickstart-consumer",
+    "auto.offset.reset": "earliest",
+    "format": "json",
+    "enable.auto.commit": false,
+    "fetch.min.bytes": 512,
+    "consumer.request.timeout.ms": 30000
+  }'
+
+  // {"instance_id":"bridge-quickstart-consumer","base_uri":"http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org:80/consumers/bridge-quickstart-consumer-group/instances/bridge-quickstart-consumer"}% 
+
+  curl -X POST http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/consumers/bridge-quickstart-consumer-group/instances/bridge-quickstart-consumer/subscription \
+  -H 'content-type: application/vnd.kafka.v2+json' \
+  -d '{
+    "topics": [
+        "my-topic"
+    ]
+}'
+
+curl -X GET http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/consumers/bridge-quickstart-consumer-group/instances/bridge-quickstart-consumer/records \
+  -H 'accept: application/vnd.kafka.json.v2+json'
+
+// Send request to player-topic
+curl -X POST \
+http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/player-topic \
+-H 'Content-type: application/vnd.kafka.json.v2+json' \
+-d '{
+    "records": [
+      { "key": "my-test",
+        "value": {
+          "age": 26,
+          "familyname": "Rolando",
+          "handed": "Right",
+          "name": "Vincente"
+        }
+      }
+    ]
+  }'
+
+// Send request to player-topic with payload (test)
+curl -X POST \
+http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/player-topic \
+-H 'Content-type: application/vnd.kafka.json.v2+json' \
+-d '{
+    "records": [
+      { "key": "my-test",
+        "value": { 
+          "payload":{
+            "age": 26,
+            "familyname": "Rolando",
+            "handed": "Right",
+            "name": "Vincente"
+          }
+        }
+      }
+    ]
+  }'
+
+// Send request to player-topic without payload (test)
+curl -X POST \
+http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/player-topic \
+-H 'Content-type: application/vnd.kafka.json.v2+json' \
+-d '{
+    "records": [
+      { "key": "my-test",
+        "value": { 
+            "age": 26,
+            "familyname": "Rolando",
+            "handed": "Right",
+            "name": "Vincente"
+        }
+      }
+    ]
+  }'
+
+
+// Send request to player-topic without payload (test)
+curl -X POST \
+http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/player-topic \
+-H 'Content-type: application/vnd.kafka.json.v2+json' \
+-d '{
+    "records": [
+      { "key": "my-test",
+        "value": { 
+            "age": 36,
+            "familyname": "Test2",
+            "handed": "Right",
+            "name": "Test2"
+        }
+      }
+    ]
+  }'

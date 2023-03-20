@@ -1,0 +1,11 @@
+curl -X POST \
+http://my-bridge-kafka-playground.apps.devops.edubois-cloud.org/topics/my-topic \
+-H 'Content-type: application/vnd.kafka.json.v2+json' \
+-d '{
+    "records": [
+      {
+        "key": "my-key",
+        "value": "ZWR3YXJkdGhldGhyZWVsZWdnZWRjYXQ="
+      }
+    ]
+  }'

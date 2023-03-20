@@ -1,0 +1,35 @@
+test:
+  enabled: false
+
+ownCerts:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+kafka:
+  replicas: 3
+  resources:
+    requests:
+      cpu: 3000m
+      memory: 16Gi
+    limits:
+      memory: 16Gi
+  # For all internal listeners
+  listeners:
+    networkPolicyPeers:
+      - namespaceSelector:
+        matchingLabels:
+          project: abc
+      - namespaceSelector:
+        matchingLabels:
+          project: xyz
+
+zookeeper:
+  replicas: 3
+  resources:
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+    limits:
+      memory: 4Gi
