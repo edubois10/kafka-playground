@@ -1,20 +1,12 @@
-test:
-  enabled: false
-
-ownCerts:
-  enabled: false
-
-networkPolicy:
-  enabled: false
-
 kafka:
   replicas: 3
   resources:
     requests:
-      cpu: 3000m
-      memory: 16Gi
+      cpu: 500m
+      memory: 1Gi
     limits:
-      memory: 16Gi
+      memory: 3Gi
+      cpu: 2000m
   # For all internal listeners
   listeners:
     networkPolicyPeers:
@@ -24,12 +16,71 @@ kafka:
       - namespaceSelector:
         matchingLabels:
           project: xyz
+  
+  ownCerts:
+    enabled: false
+  networkPolicy:
+    enabled: false
+  customBootstrap:
+    enabled: false
+    host: test.ch
+  jvmOptions:
+    enabled: false
+  rackawarness:
+    enabled: false
+
+  storage:
+    volumes:
+    - id: 0
+      type: persistent-claim 
+      size: 15G1 
+      deleteClaim: true
+    - id: 1 
+      type: persistent-claim 
+      size: 15Gi 
+      deleteClaim: true
+    - id: 2
+      type: persistent-claim
+      size: 15Gi 
+      deleteClaim: true
+
 
 zookeeper:
   replicas: 3
   resources:
     requests:
-      cpu: 2000m
-      memory: 4Gi
+      cpu: 300m
+      memory: 500mi
     limits:
-      memory: 4Gi
+      memory: 2Gi
+      cpu: 1500m
+  storage:
+    class: test
+
+entityOperator:
+  topicOperator:
+    resources:
+      requests:
+        cpu: 300m
+        memory: 500mi
+      limits:
+        memory: 2Gi
+        cpu: 1500m
+
+  userOperator:
+    resources:
+      requests:
+        cpu: 300m
+        memory: 500mi
+      limits:
+        memory: 2Gi
+        cpu: 1500m
+
+  tlsSidecar:
+    resources:
+      requests:
+        cpu: 300m
+        memory: 500mi
+      limits:
+        memory: 2Gi
+        cpu: 1500m

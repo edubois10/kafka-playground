@@ -1,0 +1,33 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-from-prometheus
+spec:
+  podSelector: {}
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kafka-monitor
+      ports:
+      - protocol: TCP
+        port: 9404
+      - protocol: TCP
+        port: 8080
+      - protocol: TCP
+        port: 8081
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name:  allow-from-mm2
+spec:
+  podSelector: {}
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kafka-mm2
+      ports:
+      - protocol: TCP
+        port: 9093

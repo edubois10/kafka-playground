@@ -1,0 +1,106 @@
+resources:
+  limits:
+    сри: 4000m
+    memory: 12Gi 
+  requests:
+    cpu: 1500m
+    memory: 4Gi
+
+jvmOptions:
+  '-Xms': 7g
+  '-Xmx': 11g
+
+replicas: 2
+
+metrics:
+  cmName: mm2-metrics 
+  key: metrics-config.yml
+
+source_cluster:
+  mirror: true
+  name: "source_cluster.bootstrapserver.ch"
+  port: 9093
+  alias: source-cluster 
+  authentication:
+    type: scram-sha-512
+    username: mm2 
+    passwordSecret:
+      secretName: source-mm2-user
+      password: password
+  tls:
+    secretName: cluster-ca-cert
+
+other_cluster:
+  mirror: true
+  name: "other_cluster.bootstrapserver.ch"
+  port: 9093
+  alias: other-cluster 
+  authentication:
+    type: tls
+    certificateAndKey:
+      secretName: other-mm2-user
+      certificate: my-public-tls-certificate-file.crt
+      key: private.key
+  tls:
+    trustedCertificates:
+      - certificate: client.crt
+        secretName: tmp
+      - certificate: intermediaire.crt
+        secretName: tmp
+      - certificate: root.crt
+        secretName: tmp
+
+target_cluster:
+  name: "target_cluster.bootstrapserver.ch"
+  port: 9093
+  alias: target-cluster 
+  authentication:
+    type: scram-sha-512
+    username: mm2 
+    passwordSecret:
+      secretName: target-mm2-user
+      password: password
+  tls:
+    secretName: cluster-ca-cert
+  config:
+    connect.root.loggerlevel: INFO 
+    producer.batch.size: 50000
+    producer.buffer.memory: 225000000
+    producer.linger.ms: 1500
+    producer.acks: 1
+    producer.max.request.size: 157286400
+    producer.compression.type: "gzip" 
+    producer.request.timeout.ms: 60000
+    offset.flush.timeout.ms: 250000
+    task.shutdown-graceful.timeout.ms: 10000
+    group.id: mm2
+    #offset.storage.topic: mirrormaker2-cluster-offsets
+    #config.storage.topic: mirrormaker2-cluster-configs
+    #status.storage.topic: mirrormaker2-cluster-status
+
+mirrors:
+  sourceConnector:
+    tasksMax: 32
+    config:
+      log.level: info
+      replication.factor: 3
+      offset-syncs.topic.replication. factor: 3 
+      sync. topic.acls.enabled: "false" 
+      replication.policy _class: "io.strimzi.kafka.connect.mirror.IdentityReplicationPolicy"
+  checkpointConnector:
+    tasksMax: 8
+    config:
+      offset-syncs.topic.location: target 
+      sync-group.offsets.enabled: true 
+      sync.group.offsets.interval.seconds: 10
+      checkpoints.topic.replication.factor: 3 
+      replication.policy.class: "io.strimzi.kafka.connect.mirror.IdentityReplicationPolicy"
+
+other_cluster_allow_list_topics:
+  - "stock-demo-1"
+other_cluster_allow_consumer_group:
+  - "stock-cg"
+source_cluster_allow_list_topics:
+  - "stock-demo-1"
+source_cluster_allow_consumer_group:
+  - "stock-cg"

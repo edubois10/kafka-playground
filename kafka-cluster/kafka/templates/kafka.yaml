@@ -1,18 +1,22 @@
-apiVersion: kafka.strimzi.io/vibeta2
-kind: Kafka metadata:
-  name: {{ Release.Name }} 
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka 
+metadata:
+  name: kafka
   labels:
     app: strimzi
 spec:
-  {{- if .Value.ownCerts.enabled}}
+  {{- if .Values.kafka.ownCerts.enabled }}
   clusterCa:
     generateSecretOwnerReference: false 
   clientsCa:
     generateSecretOwnerReference: false
   {{- end }}
   kafka:
+    jvmOptions:
+    {{- if .Values.kafka.jvmOptions.enabled }}
+    {{- end }}
     version: 3.3.1
-    replicas: {{ . Values. kafka.replicas }}
+    replicas: {{ .Values.kafka.replicas }}
     listeners:
       - name: tls 
         port: 9093
@@ -20,22 +24,34 @@ spec:
         tls: true
         authentication:
           type: scram-sha-512
-        networkPolicyPeers:
-          {{- if .Value.networkPolicy.enabled}}
-          {{- toYaml .Values. kafka.listeners.networkPolicyPeers | nindent 10 }}
-          {{- if .Value.networkPolicy.enabled}}
-      - name: external
-        port: 9094 
-        tls: true 
-        type: route
-        authentication:
-          type: scram-sha-512
-          {{- if .Value.ownCerts.enabled}}
+          {{- if .Values.kafka.ownCerts.enabled}}
           configuration:
             brokerCertChainAndKey: 
               certificate: tls.crt 
               key: tls.key
-              secretName: {{ -Release.Name }}-kafka-tls
+              secretName: kafka-tls
+          {{- end }}
+        networkPolicyPeers:
+        {{- if .Values.kafka.networkPolicy.enabled }}
+          {{- toYaml .Values.kafka.listeners.networkPolicyPeers | nindent 10 }}
+        {{- end }}
+      - name: external
+        port: 9094 
+        tls: true 
+        type: route
+        configuration:
+          {{- if .Values.kafka.customBootstrap.enabled }}
+          bootstrap:
+            host: {{ .Values.kafka.customBootstrap.host }}
+          {{- end }}
+        authentication:
+          type: scram-sha-512
+          {{- if .Values.kafka.ownCerts.enabled }}
+          configuration:
+            brokerCertChainAndKey: 
+              certificate: tls.crt 
+              key: tls.key
+              secretName: kafka-tls
           {{- end }}
     readinessProbe:
       initialDelaySeconds: 15
@@ -54,29 +70,22 @@ spec:
       inter.broker.protocol.version: "3.3"
     storage:
       type: jbod
-      volumes:
-      - id: 0
-        type: persistent-claim 
-        size: 10G1 
-        deleteClaim: false
-      - id: 1 
-        type: persistent-claim 
-        size: 10Gi 
-        deleteClaim: false
-      - id: 2
-        type: persistent-claim
-        size: 10Gi 
-        deleteClaim: false
+      volumes:       
+        {{- toYaml .Values.kafka.storage.volumes | nindent 6 }}
     metricsConfig:
       type: jmxPrometheusExporter 
       valueFrom:
         configMapKeyRef:
-          name: {{ . Release. Name }}-kafka-metrics 
-          key: kafka-metrics-config. yml
+          name: kafka-metrics 
+          key: kafka-metrics-config. ymlf
     resources:
-      {{- toYaml .Values. kafka.resources | nindent 6 }}
+      {{- toYaml .Values.kafka.resources | nindent 6 }}
     template:
       pod:
+        metadata:
+          annotations:
+            prometheus.io/port: '9404'
+            prometheus.io/scrape: 'true'
         affinity:
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
@@ -87,13 +96,14 @@ spec:
                       operator: In 
                       values:
                         - kafka
-                topologyKey: kubernetes.io/hostname I
-                # 90 because rack awareness is 100
-                weight: 90
+                topologyKey: kubernetes.io/hostname
+              weight: 90
+    {{- if .Values.kafka.rackawarness.enabled }}
     rack:
-      topologykey: topology. kubernetes.io/zone
+      topologykey: topology.kubernetes.io/zone
+    {{- end }} 
   zookeeper:
-    replicas: ( Values .zookeeper.replicas })
+    replicas: {{ .Values.zookeeper.replicas }}
     readinessProbe:
       initialDelaySeconds: 15
       timeoutSeconds: 5 
@@ -102,35 +112,34 @@ spec:
       timeoutSeconds: 5
     # Jbod is not supported for zookeeper
     storage:
+      class: {{ .Values.zookeeper.storage.class }}
       type: persistent-claim 
       size: 20Gi 
-      deleteClaim: false
+      deleteClaim: true
     metricsConfig:
       type: jmxPrometheusExporter 
       valueFrom:
         configMapKeyRef:
-          name: {{ .Release. Name }}-kafka-metrics 
+          name: kafka-metrics 
           key: zookeeper-metrics-config.yml
     resources:
-      {{- toYaml •Values. zookeeper. resources | nindent 6 }}
+      {{- toYaml .Values.zookeeper.resources | nindent 6 }}
     template:
       pod:
-        affanity:
-          podAntiAffinity:
-            preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm: 
-                labelSelector:
-                  matchExpressions:
-                    - key: app. kubernetes.io/name
-                      operator: In
-                      values:
-                        - zookeeper
-                topologyKey: kubernetes.io/hostname
-              # 90 because rack awareness is 100
-              weight; 90
+        metadata:
+          annotations:
+            prometheus.io/port: '9404'
+            prometheus.io/scrape: 'true'
   entityOperator:
-    topicOperator: (} 
-    userOperator: (}
+    tlsSidecar:
+      resources:
+      {{- toYaml .Values.entityOperator.tlsSidecar.resources | nindent 8 }}
+    topicOperator:
+      resources:
+      {{- toYaml .Values.entityOperator.topicOperator.resources | nindent 8 }}
+    userOperator:
+      resources:
+      {{- toYaml .Values.entityOperator.userOperator.resources | nindent 8 }}
   kafkaExporter: 
     topicRegex: ".*"
     groupRegex: ".*"

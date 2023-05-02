@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: mirrormaker2-prometheus
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: '9094'
+    prometheus.io/scrape: 'true'
+spec:
+  ports:
+    - name: 9404-tcp 
+      protocol: TCP 
+      port: 9404
+      targetPort: 9404 
+  internalTrafficPolicy: Cluster 
+  type: ClusterIP
+  sessionAffinity: None 
+  selector:
+    strimzi.io/kind: KafkaMirrorMaker2

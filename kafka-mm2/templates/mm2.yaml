@@ -1,0 +1,96 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaMirrorMaker2 
+metadata:
+  name: mm2
+spec:
+  replicas: {{ .Values.replicas }} 
+  template:
+    pod:
+      metadata:
+        annotations:
+          prometheus.io/port: '9404'
+          prometheus.io/scrape: 'true'
+  resources:
+  {{- toYaml .Values.resources | nindent 4}} 
+  jvmOptions:
+  {{- toYaml .Values.jvmOptions | nindent 4 }} 
+  version: 3.3.1
+  connectCluster: {{ .Values.target_cluster.alias }}
+  clusters:
+  {{- if .Values.source_cluster.mirror }}
+  ####################### SOURCE CLUSTER ######################
+  - alias: {{ .Values.source_cluster.alias }}
+    bootstrapServers: {{ .Values.source_cluster.name }}:{{ .Values.source_cluster.port }}
+    tls:
+      trustedCertificates:
+        - secretName: {{ .Values.source_cluster.tls.secretName }}
+          certificate: ca.crt
+    authentication:
+    {{- toYaml .Values.source_cluster.authentication | nindent 6 }}
+  {{- end }}
+
+  ####################### OTHER CLUSTER ######################
+  {{- if .Values.other_cluster.mirror }}
+  - alias: {{ .Values.other_cluster.alias }}
+    bootstrapServers: {{ .Values.other_cluster.name }}:{{ .Values.other_cluster.port }}
+    tls:
+    {{- toYaml .Values.other_cluster.tls | nindent 6 }}
+    authentication:
+    {{- toYaml .Values.other_cluster.authentication | nindent 6 }}
+  {{- end }}
+####################### TARGET CLUSTER ########################
+  - alias: {{ .Values.target_cluster.alias }}
+    bootstrapServers: {{ .Values.target_cluster.name }}:{{ .Values.target_cluster.port }}
+    tls:
+      trustedCertificates:
+        - secretName: {{ .Values.target_cluster.tls.secretName }}
+          certificate: ca.crt
+    authentication:
+    {{- toYaml .Values.target_cluster.authentication | nindent 6 }}
+    config:
+    {{- toYaml .Values.target_cluster.config | nindent 6 }}
+
+  mirrors:
+  {{- if .Values.source_cluster.mirror }}
+  ############ SOURCE - TARGET ###########
+  - sourceCluster: {{ .Values.source_cluster.alias }}
+    targetCluster: {{ .Values.target_cluster.alias }}
+    sourceConnector:
+      tasksMax: {{ .Values.mirrors.sourceConnector.tasksMax }}
+      config:
+      {{- toYaml .Values.mirrors.sourceConnector.config | nindent 8 }}
+    heartbeatConnector:
+      config:
+        heartbeats.topic.replication.factor: 3
+    checkpointConnector:
+      tasksMax: {{ .Values.mirrors.checkpointConnector.tasksMax }}
+      config:
+      {{- toYaml .Values.mirrors.checkpointConnector.config | nindent 8 }}
+    topicsPattern: {{ join "," .Values.source_cluster_allow_list_topics }}
+    groupsPattern: {{ join "," .Values.source_cluster_allow_consumer_group }}
+    {{- end }}
+
+    {{- if .Values.other_cluster.mirror }}
+    ############ OTHER - TARGET ###########
+  - sourceCluster: ({ .Values.other_cluster.alias }}
+    targetCluster: {{ .Values.target_cluster.alias }}
+    sourceConnector:
+      tasksMax: {{ .Values.mirrors.sourceConnector.tasksMax }}
+      config:
+      {{- toYaml .Values.mirrors.sourceConnector.config | nindent 8 }}
+    heartbeatConnector:
+      config:
+        heartbeats.topic.replication.factor: 3
+    checkpointConnector:
+      tasksMax: {{ .Values.mirrors.checkpointConnector.tasksMax }}
+      config:
+      {{- toYaml .Values.mirrors.checkpointConnector.config | nindent 8 }}
+    topicsPattern: {{ join "," .Values.other_cluster_allow_list_topics }}
+    groupsPattern: {{ join "," .Values.other_cluster_allow_consumer_group }}
+    {{- end }}
+  metricsConfig:
+    type: jmxPrometheusExporter
+    valueFrom:
+      configMapKeyRef:
+        name: {{ .Values.metrics.cmName }}
+        key: {{ .Values.metrics.key }}
