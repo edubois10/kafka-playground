@@ -1,0 +1,51 @@
+# Common OS files or dirs
+.DS_Store
+# Common VCS dirs
+.git/
+.gitignore
+.bzr/
+.bzrignore
+.hg/
+.hgignore
+.svn/
+# Common backup files
+*.swp
+*.bak
+*.tmp
+*~
+# Patch files
+*.orig
+*.rej
+# Various IDEs
+## Eclipse
+.project
+.classpath
+.settings/
+bin/
+## IntelliJ
+.idea/
+*.ipr
+*.iml
+*.iws
+## NetBeans
+nb-configuration.xml
+## Visual Studio Code
+.vscode/
+## Vim
+*.swp
+*.swo
+## TextMate
+*.tmproj
+# Various binary files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.tgz
+*.class
+# Developer test files and dirs
+*tmp*
+*.log

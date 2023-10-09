@@ -1,0 +1,19 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: consumer-demo-config-cm
+data:
+  kafka.bootstrap.servers: >-
+    <bootstrap_url>:443
+  kafka.sasl.jaas.config: >-
+    org.apache.kafka.common.security.scram.ScramLoginModule required username="demo-user" password="OULzI1VqC6WVk3TmK0olIAVZfT13grBH"; 
+  
+  mp.messaging.incoming.stockdemo.group.id: stock-demo-1
+
+  kafka.ssl.truststore.location: /secrets/truststore.jks
+  kafka.sasl.mechanism: SCRAM-SHA-512
+  kafka.security.protocol: SASL_SSL
+
+  quarkus.vertx.caching: 'false'
+  quarkus.kafka.devservices.enabled: 'false'
+  quarkus.vertx.classpath-resolving: 'false'

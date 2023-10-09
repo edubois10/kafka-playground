@@ -1,0 +1,8 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: streams-demo-config-s
+  namespace: helvetia-demo
+data:
+  kafka.ssl.truststore.password: cGFzc3dvcmQ=
+type: Opaque

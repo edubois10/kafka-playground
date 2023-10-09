@@ -1,0 +1,11 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: strimzi-kafka-exporter
+spec:
+  resyncPeriod: 30s
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: |
+    {{- .Files.Get "files/grafana-dashboards/strimzi-kafka-exporter.json" | nindent 4 -}}

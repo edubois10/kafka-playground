@@ -1,0 +1,12 @@
+apiVersion: keda.sh/v1alpha1
+kind: ClusterTriggerAuthentication
+metadata:
+  name: keda-auth
+spec:
+  secretTargetRef:
+    - key: token
+      name: <SA_TOKEN>
+      parameter: bearerToken
+    - key: service-ca.crt
+      name: <SA_TOKEN>
+      parameter: ca

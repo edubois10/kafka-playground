@@ -1,0 +1,7 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: consumer-demo-config-s
+data:
+  kafka.ssl.truststore.password: cGFzc3dvcmQ=
+type: Opaque

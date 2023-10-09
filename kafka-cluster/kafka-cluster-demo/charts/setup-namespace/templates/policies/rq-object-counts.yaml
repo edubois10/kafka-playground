@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: object-counts
+spec:
+  hard:
+    pods: '32'
+    configmaps: '32'
+    persistentvolumeclaims: '8'
+    replicationcontrollers: '32'
+    secrets: '64'
+    services: '32'
+    services.loadbalancers: '32'

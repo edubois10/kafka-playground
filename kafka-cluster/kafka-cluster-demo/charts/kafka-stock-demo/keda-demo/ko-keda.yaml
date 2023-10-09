@@ -1,0 +1,32 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: stock-demo-scaledobject
+  namespace: demo
+spec:
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 30
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: consumer-demo
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  pollingInterval: 5
+  cooldownPeriod:  10
+  triggers:
+  - type: prometheus
+    metadata:
+      serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+      namespace: demo
+      metricName: Messages in per second
+      threshold: '0.5'
+      query: sum(rate(kafka_topic_partition_current_offset{topic=~"(stock-demo-1)", namespace=~"kafka"}[1m])) by (topic)
+      authModes: "bearer"
+    authenticationRef:
+      name: keda-auth
+      kind: ClusterTriggerAuthentication

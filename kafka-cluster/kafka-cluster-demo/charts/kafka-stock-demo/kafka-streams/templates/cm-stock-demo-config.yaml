@@ -1,0 +1,19 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: streams-demo-config-cm
+  namespace: helvetia-demo
+data:
+  quarkus.kafka-streams.bootstrap-servers: dev-kafka-bootstrap-helvetia-demo.apps.cluster-nnpqw.nnpqw.sandbox2789.opentlc.com:443
+  quarkus.kafka-streams.application-id: stock-price-streams
+  quarkus.kafka-streams.topics: stock-demo-1
+
+  kafka.sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="helvetia-demo-user" password="JVdLpAulG3IquxH1V0xDnttEK8ojPSZU"; 
+  
+  kafka.ssl.truststore.location: /secrets/truststore.jks
+  kafka.sasl.mechanism: SCRAM-SHA-512
+  kafka.security.protocol: SASL_SSL
+
+  quarkus.vertx.caching: 'false'
+  quarkus.kafka.devservices.enabled: 'false'
+  quarkus.vertx.classpath-resolving: 'false'
