@@ -1,0 +1,26 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: keda-kafka-secrets
+  namespace: demo
+  uid: 72b042a9-7b8e-4309-8d79-816ac921145a
+  resourceVersion: '565571'
+  creationTimestamp: '2023-10-11T07:32:46Z'
+  managedFields:
+    - manager: Mozilla
+      operation: Update
+      apiVersion: v1
+      time: '2023-10-11T13:46:01Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:data':
+          .: {}
+          'f:password': {}
+          'f:sasl': {}
+          'f:username': {}
+        'f:type': {}
+data:
+  password: T1VMekkxVnFDNldWazNUbUswb2xJQVZaZlQxM2dyQkg=
+  sasl: c2NyYW1fc2hhNTEy
+  username: aGVsdmV0aWEtZGVtbw==
+type: Opaque

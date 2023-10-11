@@ -1,0 +1,32 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: kafka-scaledobject
+  namespace: demo
+spec:
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 30
+    restoreToOriginalReplicaCount: true
+  cooldownPeriod: 10
+  maxReplicaCount: 10
+  minReplicaCount: 1
+  pollingInterval: 5
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: consumer-demo
+  triggers:
+    - authenticationRef:
+        kind: TriggerAuthentication
+        name: keda-trigger-auth-kafka-credential
+      metadata:
+        bootstrapServers: 'dev-kafka-bootstrap.kafka.svc.cluster.local:9092'
+        consumerGroup: stock-demo-1
+        lagThreshold: '2'
+        password: OULzI1VqC6WVk3TmK0olIAVZfT13grBH
+        topic: stock-demo-1
+        username: helvetia-demo
+      type: kafka
