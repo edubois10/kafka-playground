@@ -23,9 +23,10 @@ spec:
         kind: TriggerAuthentication
         name: keda-trigger-auth-kafka-credential
       metadata:
-        bootstrapServers: 'dev-kafka-bootstrap.kafka.svc.cluster.local:9092'
+        bootstrapServers: >-
+          dev-kafka-bootstrap-kafka.apps.cluster-lwp66.lwp66.sandbox1482.opentlc.com:443
         consumerGroup: stock-demo-1
-        lagThreshold: '2'
+        lagThreshold: '5'
         password: OULzI1VqC6WVk3TmK0olIAVZfT13grBH
         topic: stock-demo-1
         username: helvetia-demo

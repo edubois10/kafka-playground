@@ -14,3 +14,9 @@ spec:
     - key: sasl
       name: keda-kafka-secrets
       parameter: sasl
+    - key: tls
+      name: keda-kafka-secrets
+      parameter: tls
+    - key: ca
+      name: keda-kafka-secrets
+      parameter: ca
