@@ -27,7 +27,5 @@ spec:
           dev-kafka-bootstrap-kafka.apps.cluster-lwp66.lwp66.sandbox1482.opentlc.com:443
         consumerGroup: stock-demo-1
         lagThreshold: '5'
-        password: OULzI1VqC6WVk3TmK0olIAVZfT13grBH
         topic: stock-demo-1
-        username: helvetia-demo
       type: kafka

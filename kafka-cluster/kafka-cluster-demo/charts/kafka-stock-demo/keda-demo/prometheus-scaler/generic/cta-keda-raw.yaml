@@ -1,7 +1,8 @@
 apiVersion: keda.sh/v1alpha1
 kind: ClusterTriggerAuthentication
 metadata:
-  name: keda-auth
+  name: keda-auth-prometheus
+  namespace: demo
 spec:
   secretTargetRef:
     - key: token

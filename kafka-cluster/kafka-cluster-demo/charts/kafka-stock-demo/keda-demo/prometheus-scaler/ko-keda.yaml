@@ -28,5 +28,5 @@ spec:
       query: sum(rate(kafka_topic_partition_current_offset{topic=~"(stock-demo-1)", namespace=~"kafka"}[1m])) by (topic)
       authModes: "bearer"
     authenticationRef:
-      name: keda-auth
-      kind: ClusterTriggerAuthentication
+      name: keda-auth-prometheus
+      kind: TriggerAuthentication
